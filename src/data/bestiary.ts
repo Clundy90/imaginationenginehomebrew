@@ -681,6 +681,6 @@ export const ENHANCED_BESTIARY: Monster[] = [
     speed: "??",
     stats: { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 },
     lore: "The ultimate end-state of the Imagination Engine. It is not a creature, but a total failure of the world-logic. It exists only to delete the user's progress.",
-    abilities: ["Panic", "End of File", "Total Memory Wipe"],
+    abilities: ["Confusion", "End of File", "Total Memory Wipe"],
   },
 ];

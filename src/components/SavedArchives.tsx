@@ -15,7 +15,7 @@ export const SavedArchives = ({ items, onRemove }: SavedArchivesProps) => {
         className="accent-gold"
         style={{ letterSpacing: "4px", textAlign: "center" }}
       >
-        ETHEREAL ARCHIVES
+        ETERNAL ARCHIVES
       </h2>
 
       <div

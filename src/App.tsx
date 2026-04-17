@@ -11,10 +11,11 @@ import { SavedArchives } from "./components/SavedArchives";
 import { AudioPlayer } from "./components/AudioPlayer";
 import { SessionLog, Manifestation } from "./components/SessionLog";
 import { BagOfHolding } from "./components/BagOfHolding";
+import { QuestFinder } from "./components/QuestFinder";
 
 /**
  * Main Application Component: Imagination Engine Homebrew
- * Cleaned of all Auth dependencies and inline styles.
+ * Now featuring the Quest Finder module for one-shot generation.
  */
 const AppContent = () => {
   const [activeTab, setActiveTab] = useState<string>("character");
@@ -66,6 +67,10 @@ const AppContent = () => {
    */
   const renderContent = () => {
     switch (activeTab) {
+      // --- NEW QUEST FINDER MODULE ---
+      case "quests":
+        return <QuestFinder onLog={addManifestation} />;
+
       case "character":
         return (
           <CharacterCreator
@@ -113,7 +118,6 @@ const AppContent = () => {
       case "bag":
         return (
           <BagOfHolding
-            // Ensure we pass all three arguments to addManifestation
             onStash={(label, name, details) =>
               addManifestation(label, name, details)
             }
@@ -143,6 +147,7 @@ const AppContent = () => {
           <nav className="main-nav">
             {[
               "character",
+              "quests", // Added Quests to the nav array
               "dice",
               "monster",
               "world",
