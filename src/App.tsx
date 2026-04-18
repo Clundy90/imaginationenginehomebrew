@@ -12,6 +12,7 @@ import { AudioPlayer } from "./components/AudioPlayer";
 import { SessionLog, Manifestation } from "./components/SessionLog";
 import { BagOfHolding } from "./components/BagOfHolding";
 import { QuestFinder } from "./components/QuestFinder";
+import { GlitchOracle } from "./components/GlitchOracle";
 
 /**
  * Main Application Component: Imagination Engine Homebrew
@@ -107,6 +108,10 @@ const AppContent = () => {
             }
           />
         );
+
+      case "oracle":
+        return <GlitchOracle onLog={addManifestation} />;
+
       case "npc":
         return (
           <NPCGenerator
@@ -123,7 +128,7 @@ const AppContent = () => {
             }
           />
         );
-      case "vault":
+      case "Saved Archives":
         return (
           <SavedArchives
             items={favorites}
@@ -147,13 +152,14 @@ const AppContent = () => {
           <nav className="main-nav">
             {[
               "character",
-              "quests", // Added Quests to the nav array
+              "quests",
               "dice",
               "monster",
               "world",
               "npc",
               "bag",
-              "vault",
+              "oracle",
+              "Saved Archives",
             ].map((tab) => (
               <button
                 key={tab}
