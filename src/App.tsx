@@ -87,11 +87,17 @@ const AppContent = () => {
       case "monster":
         return (
           <MonsterSummoner
+            /**
+             * The 'onSummon' prop now expects a full 'Monster' object from the child.
+             * We capture that object and pass its specific properties into the
+             * central addManifestation handler to ensure the vault and session log
+             * have the full metadata (HP, AC, Stats) for the 'Inspect' view.
+             */
             onSummon={(monster: any) =>
               addManifestation(
-                "BEAST SUMMONED",
-                monster.name || "Unknown Beast",
-                monster,
+                "BEAST SUMMONED", // The Label: Shows up in the Vault header
+                monster.name, // The Value: The primary name displayed
+                monster, // The Details: The full object for the Inspect view
               )
             }
           />

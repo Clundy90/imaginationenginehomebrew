@@ -2,45 +2,70 @@ import React, { useState, useMemo } from "react";
 import { ENHANCED_BESTIARY, Monster } from "../data/bestiary";
 
 /**
- * Prop interface for communication with the parent App component.
+ * MonsterSummoner Component
+ * Restoration: Fixed the data pipeline to pass the full Monster object.
+ * Corrected the onSummon signature to match the requirement in App.tsx.
  */
 interface SummonerProps {
-  onSummon: (name: string) => void;
+  // Prop signature updated to expect the full Monster object as per App.tsx requirements
+  onSummon: (monster: Monster) => void;
 }
 
 export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
   const [monster, setMonster] = useState<Monster | null>(null);
   const [isSummoning, setIsSummoning] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTrigger, setSearchTrigger] = useState("");
 
   /**
-   * Performance optimization: Filter the 50+ monster list only when searchTerm changes.
+   * Filters the bestiary only when the Search Button is pressed (or Enter).
+   * This prevents unnecessary re-renders while the user is typing.
    */
   const filteredBestiary = useMemo(() => {
+    if (!searchTrigger) return [];
     return ENHANCED_BESTIARY.filter(
       (m) =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.type.toLowerCase().includes(searchTerm.toLowerCase()),
+        m.name.toLowerCase().includes(searchTrigger.toLowerCase()) ||
+        m.type.toLowerCase().includes(searchTrigger.toLowerCase()),
     );
-  }, [searchTerm]);
+  }, [searchTrigger]);
+
+  const handleSearch = () => {
+    setSearchTrigger(searchTerm);
+  };
 
   /**
-   * Handles the 'tearing' logic.
-   * If a search is active, it pulls randomly from the filtered results.
+   * HANDLES THE MANIFESTATION LOGIC
+   * We ensure a valid monster is selected from either the search results
+   * or the global list before sending it to the central App state.
    */
   const handleSummon = () => {
     setIsSummoning(true);
 
     setTimeout(() => {
+      // Logic: If a search was performed, pull from the filtered list. Otherwise, pull from the whole void.
       const sourceList =
         filteredBestiary.length > 0 ? filteredBestiary : ENHANCED_BESTIARY;
+
       const selected =
         sourceList[Math.floor(Math.random() * sourceList.length)];
 
-      setMonster(selected);
-      setIsSummoning(false);
-      onSummon(selected.name);
-    }, 600);
+      /**
+       * DATA INTEGRITY GUARD:
+       * We verify the monster exists. We now pass the 'selected' object DIRECTLY
+       * to match the App.tsx handler: onSummon={(monster) => addManifestation(...)}
+       */
+      if (selected && selected.name) {
+        setMonster(selected);
+        setIsSummoning(false);
+
+        // SUCCESS: Passing the single monster object so App.tsx can read monster.name
+        onSummon(selected);
+      } else {
+        console.error("Summoning failed: Selected entity is null or invalid.");
+        setIsSummoning(false);
+      }
+    }, 600); // 600ms simulated delay for the "veils tearing" effect
   };
 
   return (
@@ -49,42 +74,35 @@ export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
 
       <div
         className="search-container"
-        style={{ marginBottom: "20px", position: "relative" }}
+        style={{ marginBottom: "20px", display: "flex", gap: "10px" }}
       >
         <input
           type="text"
           placeholder="SEARCH THE VOID..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: "100%",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 215, 0, 0.3)",
-            color: "var(--accent-gold)",
-            padding: "12px",
-            fontSize: "0.8rem",
-            fontFamily: "monospace",
-            outline: "none",
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          className="character-input"
+          style={{ flex: 1 }}
         />
-        {searchTerm && (
-          <span
-            style={{
-              fontSize: "0.6rem",
-              position: "absolute",
-              right: "10px",
-              bottom: "-15px",
-            }}
-            className="data-dim"
-          >
-            {filteredBestiary.length} ENTITIES FOUND
-          </span>
-        )}
+        <button
+          onClick={handleSearch}
+          style={{
+            padding: "0 20px",
+            border: "1px solid var(--accent-purple)",
+            background: "rgba(155, 89, 182, 0.2)", // Using a faded purple for better blending
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          SEARCH
+        </button>
       </div>
 
       <button
         onClick={handleSummon}
         className="summon-btn"
+        disabled={isSummoning}
         style={{
           width: "100%",
           marginBottom: "25px",
@@ -93,27 +111,24 @@ export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
           background: "transparent",
           color: "var(--accent-gold)",
           cursor: "pointer",
-          textTransform: "uppercase",
           fontWeight: "bold",
-          letterSpacing: "2px",
+          textTransform: "uppercase",
         }}
-        disabled={isSummoning}
       >
         {isSummoning ? "TEARING THE VEIL..." : "MANIFEST ENTITY"}
       </button>
 
+      {/* Render the local visual card for the user */}
       {monster && (
         <div
           className="monster-card-detailed roll-animation"
           style={{
             border: "1px solid var(--accent-gold)",
             padding: "20px",
-            background: "rgba(5, 5, 5, 0.8)",
+            background: "rgba(5, 5, 5, 0.9)",
             borderLeft: "4px solid var(--accent-gold)",
-            boxShadow: "inset 0 0 20px rgba(168, 85, 247, 0.1)",
           }}
         >
-          {/* Header Section */}
           <div
             style={{
               display: "flex",
@@ -143,7 +158,7 @@ export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
             </div>
           </div>
 
-          {/* Stat Block */}
+          {/* Stat Grid */}
           <div
             style={{
               display: "flex",
@@ -165,7 +180,6 @@ export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
             ))}
           </div>
 
-          {/* Lore Section */}
           <div style={{ marginTop: "15px" }}>
             <h4
               className="data-label"
@@ -180,37 +194,8 @@ export const MonsterSummoner = ({ onSummon }: SummonerProps) => {
               {monster.lore}
             </p>
           </div>
-
-          {/* Abilities */}
-          <div style={{ marginTop: "20px" }}>
-            <h4
-              className="data-label"
-              style={{ marginBottom: "10px", fontSize: "0.7rem" }}
-            >
-              ABILITIES & TRAITS
-            </h4>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {monster.abilities.map((ability) => (
-                <span
-                  key={ability}
-                  style={{
-                    fontSize: "0.65rem",
-                    padding: "3px 10px",
-                    background: "rgba(255, 255, 255, 0.05)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    borderRadius: "2px",
-                    color: "#eee",
-                  }}
-                >
-                  {ability.toUpperCase()}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       )}
     </div>
   );
 };
-
-export default MonsterSummoner;

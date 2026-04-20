@@ -1,14 +1,16 @@
 import React from "react";
 
 /**
- * Manifestation interface updated to hold detailed objects.
- * This ensures "Saved Archives" gets the full data, not just strings.
+ * MANIFESTATION INTERFACE
+ * This is the contract for how data moves through the engine.
+ * If 'value' is "Unknown", the break is happening in the MonsterSummoner
+ * component or the App.tsx onSummon prop.
  */
 export interface Manifestation {
   id: number;
-  label: string; // e.g., "DICE ROLL", "NPC SCOUTED"
-  value: string; // The primary display text
-  details?: any; // The full NPC/Monster object for archiving
+  label: string; // e.g., "BEAST SUMMONED"
+  value: string; // e.g., "Ancient Red Dragon" (This is showing "Unknown")
+  details?: any; // The full object (HP, AC, Stats)
   timestamp: string;
 }
 
@@ -41,7 +43,7 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
       >
         {manifestations.length === 0 ? (
           <p className="data-dim" style={{ fontSize: "0.8rem" }}>
-            No activity detected in the current stream...
+            No activity detected...
           </p>
         ) : (
           manifestations.map((m) => (
@@ -51,9 +53,9 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
               style={{
                 padding: "12px 0",
                 borderBottom: "1px solid rgba(168, 85, 247, 0.2)",
-                position: "relative",
               }}
             >
+              {/* TOP ROW: LABEL & TIME */}
               <div
                 style={{
                   display: "flex",
@@ -67,7 +69,6 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
                     fontSize: "0.6rem",
                     color: "var(--accent-gold)",
                     textTransform: "uppercase",
-                    letterSpacing: "1px",
                   }}
                 >
                   {m.label}
@@ -84,6 +85,7 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
                 </span>
               </div>
 
+              {/* BOTTOM ROW: VALUE & FAVORITE BUTTON */}
               <div
                 style={{
                   display: "flex",
@@ -101,10 +103,19 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
                     paddingRight: "30px",
                   }}
                 >
-                  {m.value}
+                  {/**
+                   * DEBUGGING TIP:
+                   * If this renders "Unknown", it means App.tsx received "Unknown"
+                   * inside the 'monster.name' field.
+                   * String() conversion here ensures we don't crash on objects.
+                   */}
+                  {m.value ? String(m.value) : "VOID_NULL"}
                 </div>
 
-                {/* The Favorite Star: Only shows for NPCs, Monsters, or World events */}
+                {/* 
+                   THE STAR (FAVORITE) BUTTON 
+                   We disable this for DICE ROLLs to keep the Archive clean.
+                */}
                 {m.label !== "DICE ROLL" && (
                   <button
                     onClick={() => onFavorite(m)}
@@ -115,7 +126,6 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
                       color: "var(--accent-gold)",
                       cursor: "pointer",
                       fontSize: "1.1rem",
-                      padding: "0",
                       lineHeight: "1",
                     }}
                     title="Transfer to Saved Archives"
@@ -128,24 +138,6 @@ export const SessionLog = ({ manifestations, onFavorite }: SessionLogProps) => {
           ))
         )}
       </div>
-
-      <style>{`
-        .star-btn {
-          transition: transform 0.2s ease, filter 0.2s ease;
-          opacity: 0.6;
-        }
-        .star-btn:hover {
-          transform: scale(1.2);
-          filter: drop-shadow(0 0 5px var(--accent-gold));
-          opacity: 1;
-        }
-        .recent-drawer::-webkit-scrollbar {
-          width: 4px;
-        }
-        .recent-drawer::-webkit-scrollbar-thumb {
-          background: rgba(168, 85, 247, 0.3);
-        }
-      `}</style>
     </div>
   );
 };
