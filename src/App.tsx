@@ -15,8 +15,14 @@ import { QuestFinder } from "./components/QuestFinder";
 import { GlitchOracle } from "./components/GlitchOracle";
 
 /**
+ * NEW MODULE IMPORT: The Terminal
+ * This is the separate 'Magic 8-Ball' style logic housed in its own component.
+ */
+import { Terminal } from "./components/Terminal";
+
+/**
  * Main Application Component: Imagination Engine Homebrew
- * Now featuring the Quest Finder module for one-shot generation.
+ * Now featuring the Terminal module for quick void-queries.
  */
 const AppContent = () => {
   const [activeTab, setActiveTab] = useState<string>("character");
@@ -68,7 +74,6 @@ const AppContent = () => {
    */
   const renderContent = () => {
     switch (activeTab) {
-      // --- NEW QUEST FINDER MODULE ---
       case "quests":
         return <QuestFinder onLog={addManifestation} />;
 
@@ -87,18 +92,8 @@ const AppContent = () => {
       case "monster":
         return (
           <MonsterSummoner
-            /**
-             * The 'onSummon' prop now expects a full 'Monster' object from the child.
-             * We capture that object and pass its specific properties into the
-             * central addManifestation handler to ensure the vault and session log
-             * have the full metadata (HP, AC, Stats) for the 'Inspect' view.
-             */
             onSummon={(monster: any) =>
-              addManifestation(
-                "BEAST SUMMONED", // The Label: Shows up in the Vault header
-                monster.name, // The Value: The primary name displayed
-                monster, // The Details: The full object for the Inspect view
-              )
+              addManifestation("BEAST SUMMONED", monster.name, monster)
             }
           />
         );
@@ -117,6 +112,14 @@ const AppContent = () => {
 
       case "oracle":
         return <GlitchOracle onLog={addManifestation} />;
+
+      /**
+       * NEW CASE: TERMINAL
+       * We pass the addManifestation prop here in case we want the Terminal's
+       * responses to be recorded in the Session Log later.
+       */
+      case "terminal":
+        return <Terminal onLog={addManifestation} />;
 
       case "npc":
         return (
@@ -165,6 +168,7 @@ const AppContent = () => {
               "npc",
               "bag",
               "oracle",
+              "terminal", // ADDED: Terminal listed in the nav array for auto-generation of the button
               "Saved Archives",
             ].map((tab) => (
               <button
