@@ -271,7 +271,7 @@ export const SavedArchives = ({ items, onRemove }: SavedArchivesProps) => {
                 <div style={{ display: "flex", gap: "20px" }}>
                   <button
                     onClick={() =>
-                      setExpandedId(expandedId === item.id ? null : item.id)
+                      setExpandedId(expandedId === item.id ? null : (item.id as number))
                     }
                     className="nav-btn"
                     style={{
